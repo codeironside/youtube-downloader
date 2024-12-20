@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #3f51b5;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3f51b5;
+        }
+
+        .progress {
+            display: none;
+            width: 100%;
+            height: 5px;
+            background: #ddd;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: #3f51b5;
+            transition: width 0.3s ease;
+        }
+
+        .table-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .table th {
+            background: #f5f5f5;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            margin: 0 10px;
+            color: #3f51b5;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #303f9f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>YouTube Downloader</h1>
+        <form id="formatForm">
+            <div class="input-group">
+                <label for="videoURL">YouTube URL</label>
+                <input type="url" id="videoURL" placeholder="Enter the YouTube URL" required>
+                <span class="tooltip">Paste a valid YouTube link (e.g., https://www.youtube.com/watch?v=xyz).</span>
+            </div>
+
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" id="progressBar"></div>
+            </div>
+
+            <div class="table-container" id="tableContainer">
+                <h3>Video Formats</h3>
+                <table class="table" id="videoTable">
+                    <thead>
+                        <tr>
+                            <th>Quality</th>
+                            <th>Extension</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <h3>Audio Formats</h3>
+                <table class="table" id="audioTable">
+                    <thead>
+                        <tr>
+                            <th>Quality</th>
+                            <th>Extension</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+
+    <div class="footer">
+        <a href="https://www.youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+        <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+        <a href="https://www.whatsapp.com" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+    </div>
+
+    <script>
+        document.getElementById('videoURL').addEventListener('input', async (event) => {
+            const videoURL = event.target.value;
+            const progressBar = document.getElementById('progressBar');
+            const tableContainer = document.getElementById('tableContainer');
+            const videoTableBody = document.getElementById('videoTable').querySelector('tbody');
+            const audioTableBody = document.getElementById('audioTable').querySelector('tbody');
+
+            if (!videoURL) {
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            progressBar.style.width = '0%';
+            progressBar.parentElement.style.display = 'block';
+            tableContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:3000/formats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: videoURL })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch formats.');
+                }
+
+                const { formats } = await response.json();
+                videoTableBody.innerHTML = ''; // Clear previous options
+                audioTableBody.innerHTML = ''; // Clear previous options
+
+                formats.forEach((format) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${format.quality}</td>
+                        <td>${format.ext}</td>
+                        <td><button class="btn btn-primary btn-sm download-btn" data-format-id="${format.format_id}"><i class="fas fa-download"></i></button></td>
+                    `;
+
+                    if (format.ext === 'mp4' || format.ext === 'webm') {
+                        videoTableBody.appendChild(row);
+                    } else {
+                        audioTableBody.appendChild(row);
+                    }
+                });
+
+                tableContainer.style.display = 'block';
+
+                // Simulate progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                    } else {
+                        progress += 10;
+                        progressBar.style.width = `${progress}%`;
+                    }
+                }, 100);
+            } catch (error) {
+                progressBar.parentElement.style.display = 'none';
+                alert(error.message || 'An error occurred.');
+            }
+        });
+
+        document.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('download-btn')) {
+                const button = event.target;
+                const format_id = button.getAttribute('data-format-id');
+                const videoURL = document.getElementById('videoURL').value;
+
+                try {
+                    const response = await fetch('http://localhost:3000/download', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: videoURL, format_id })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to download video.');
+                    }
+
+                    const blob = await response.blob();
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = 'video.mp4';
+                    downloadLink.click();
+                } catch (error) {
+                    alert(error.message || 'An error occurred.');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

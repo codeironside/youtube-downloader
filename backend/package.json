@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "server": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codeironside/youtube-downloader.git"
+  },
+  "keywords": [
+    "youtube",
+    "downloader"
+  ],
+  "author": "oluwatovi ayoola jolaosho",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codeironside/youtube-downloader/issues"
+  },
+  "homepage": "https://github.com/codeironside/youtube-downloader#readme",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "node": "^23.5.0",
+    "nodemon": "^3.1.9",
+    "ytdl-core": "^4.11.5"
+  }
+}
