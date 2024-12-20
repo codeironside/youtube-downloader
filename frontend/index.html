@@ -136,33 +136,33 @@
             <div class="progress">
                 <div class="progress-bar" role="progressbar" id="progressBar"></div>
             </div>
-
-            <div class="table-container" id="tableContainer">
-                <h3>Video Formats</h3>
-                <table class="table" id="videoTable">
-                    <thead>
-                        <tr>
-                            <th>Quality</th>
-                            <th>Extension</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <h3>Audio Formats</h3>
-                <table class="table" id="audioTable">
-                    <thead>
-                        <tr>
-                            <th>Quality</th>
-                            <th>Extension</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
         </form>
+        <div class="table-container" id="tableContainer">
+            <h3>Video Formats</h3>
+            <table class="table" id="videoTable">
+                <thead>
+                    <tr>
+                        <th>Quality</th>
+                        <th>Extension</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3>Audio Formats</h3>
+            <table class="table" id="audioTable">
+                <thead>
+                    <tr>
+                        <th>Quality</th>
+                        <th>Extension</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
     </div>
 
     <div class="footer">
@@ -237,32 +237,66 @@
             }
         });
 
-        document.addEventListener('click', async (event) => {
-            if (event.target.classList.contains('download-btn')) {
-                const button = event.target;
-                const format_id = button.getAttribute('data-format-id');
-                const videoURL = document.getElementById('videoURL').value;
+        // document.addEventListener('click', async (event) => {
+        //     if (event.target.classList.contains('download-btn')) {
+        //         event.preventDefault();
+        //         const button = event.target;
+        //         const format_id = button.getAttribute('data-format-id');
+        //         const videoURL = document.getElementById('videoURL').value;
 
-                try {
-                    const response = await fetch('http://localhost:3000/download', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: videoURL, format_id })
-                    });
+        //         try {
+        //             const response = await fetch('http://localhost:3000/download', {
+        //                 method: 'POST',
+        //                 headers: { 'Content-Type': 'application/json' },
+        //                 body: JSON.stringify({ url: videoURL, format_id })
+        //             });
 
-                    if (!response.ok) {
-                        throw new Error('Failed to download video.');
+        //             if (!response.ok) {
+        //                 throw new Error('Failed to download video.');
+        //             }
+
+        //             const blob = await response.blob();
+        //             const downloadLink = document.createElement('a');
+        //             downloadLink.href = URL.createObjectURL(blob);
+        //             downloadLink.download = `youtube-${format_id}`;
+        //             downloadLink.click();
+        //         } catch (error) {
+        //             alert(error.message || 'An error occurred.');
+        //         }
+        //     }
+        // });
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('click', async (event) => {
+                if (event.target.classList.contains('download-btn')) {
+                    event.preventDefault();
+                    const button = event.target;
+                    const format_id = button.getAttribute('data-format-id');
+                    const videoURL = document.getElementById('videoURL').value;
+
+                    try {
+                        const response = await fetch('http://localhost:3000/download', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url: videoURL, format_id })
+
+                        });
+                        console.log("shur")
+                        if (!response.ok) {
+                            throw new Error('Failed to download video.');
+                        }
+
+                        const blob = await response.blob();
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = URL.createObjectURL(blob);
+                        downloadLink.download = `youtube-${format_id}.mp4`;
+                        event.preventDefault();
+                        downloadLink.click();
+
+                    } catch (error) {
+                        alert(error.message || 'An error occurred.');
                     }
-
-                    const blob = await response.blob();
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(blob);
-                    downloadLink.download = 'video.mp4';
-                    downloadLink.click();
-                } catch (error) {
-                    alert(error.message || 'An error occurred.');
                 }
-            }
+            });
         });
     </script>
 </body>
